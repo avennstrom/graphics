@@ -98,54 +98,6 @@ struct SwapChainSupportDetails {
     std::vector<VkPresentModeKHR> presentModes;
 };
 
-struct Vertex {
-    glm::vec3 pos;
-    glm::vec3 color;
-    glm::vec2 texCoord;
-
-    static VkVertexInputBindingDescription getBindingDescription() {
-        VkVertexInputBindingDescription bindingDescription = {};
-        bindingDescription.binding = 0;
-        bindingDescription.stride = sizeof(Vertex);
-        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-
-        return bindingDescription;
-    }
-
-    static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
-        std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions = {};
-
-        attributeDescriptions[0].binding = 0;
-        attributeDescriptions[0].location = 0;
-        attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[0].offset = offsetof(Vertex, pos);
-
-        attributeDescriptions[1].binding = 0;
-        attributeDescriptions[1].location = 1;
-        attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-        attributeDescriptions[1].offset = offsetof(Vertex, color);
-
-        attributeDescriptions[2].binding = 0;
-        attributeDescriptions[2].location = 2;
-        attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-        attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
-
-        return attributeDescriptions;
-    }
-
-    bool operator==(const Vertex& other) const {
-        return pos == other.pos && color == other.color && texCoord == other.texCoord;
-    }
-};
-
-namespace std {
-    template<> struct hash<Vertex> {
-        size_t operator()(Vertex const& vertex) const {
-            return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (hash<glm::vec2>()(vertex.texCoord) << 1);
-        }
-    };
-}
-
 struct UniformBufferObject {
     glm::mat4 viewProj;
 };
@@ -171,8 +123,6 @@ private:
     std::vector<VkImage> swapChainImages;
     VkFormat swapChainImageFormat;
     VkExtent2D swapChainExtent;
-    //std::vector<VkImageView> swapChainImageViews;
-    //std::vector<VkFramebuffer> swapChainFramebuffers;
 
     VkDescriptorSetLayout descriptorSetLayout;
     VkPipelineLayout pipelineLayout;
@@ -196,7 +146,7 @@ private:
 
 	ColorBuffer depthTiled;
 
-    std::vector<Vertex> vertices;
+    std::vector<glm::vec3> vertices;
     std::vector<uint32_t> indices;
     VkBuffer vertexBuffer;
     VkDeviceMemory vertexBufferMemory;
@@ -466,17 +416,9 @@ private:
     }
 
     void cleanupSwapChain() {
-        //for (auto framebuffer : swapChainFramebuffers) {
-        //    vkDestroyFramebuffer(Graphics::g_device, framebuffer, nullptr);
-        //}
-
         vkDestroyPipeline(Graphics::g_device, graphicsPipeline, nullptr);
         vkDestroyPipelineLayout(Graphics::g_device, pipelineLayout, nullptr);
         vkDestroyRenderPass(Graphics::g_device, visibilityPass, nullptr);
-
-        //for (auto imageView : swapChainImageViews) {
-        //    vkDestroyImageView(Graphics::g_device, imageView, nullptr);
-        //}
 
         vkDestroySwapchainKHR(Graphics::g_device, swapChain, nullptr);
     }
@@ -872,13 +814,21 @@ private:
         VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
-        auto bindingDescription = Vertex::getBindingDescription();
-        auto attributeDescriptions = Vertex::getAttributeDescriptions();
+		VkVertexInputBindingDescription bindingDescription = {};
+		bindingDescription.binding = 0;
+		bindingDescription.stride = sizeof(glm::vec3);
+		bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+		VkVertexInputAttributeDescription attributeDescriptions[1] = {};
+		attributeDescriptions[0].binding = 0;
+		attributeDescriptions[0].location = 0;
+		attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+		attributeDescriptions[0].offset = 0;
 
         vertexInputInfo.vertexBindingDescriptionCount = 1;
-        vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+        vertexInputInfo.vertexAttributeDescriptionCount = _countof(attributeDescriptions);
         vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
-        vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
+        vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions;
 
         VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
         inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -1011,28 +961,6 @@ private:
     }
 
     void createFramebuffers() {
-        //swapChainFramebuffers.resize(swapChainImageViews.size());
-
-        //for (size_t i = 0; i < swapChainImageViews.size(); i++) {
-        //    VkImageView attachments[] = {
-        //        swapChainImageViews[i],
-		//		sceneDepth.view()
-        //    };
-		//
-        //    VkFramebufferCreateInfo framebufferInfo = {};
-        //    framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        //    framebufferInfo.renderPass = visibilityPass;
-        //    framebufferInfo.attachmentCount = static_cast<uint32_t>(_countof(attachments));
-        //    framebufferInfo.pAttachments = attachments;
-        //    framebufferInfo.width = swapChainExtent.width;
-        //    framebufferInfo.height = swapChainExtent.height;
-        //    framebufferInfo.layers = 1;
-		//
-        //    if (vkCreateFramebuffer(Graphics::g_device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
-        //        throw std::runtime_error("failed to create framebuffer!");
-        //    }
-        //}
-
 		{
 			VkImageView attachments[] = {
 				visibilityBuffer.view(),
@@ -1077,24 +1005,15 @@ private:
             throw std::runtime_error(err);
         }
 
-        std::unordered_map<Vertex, uint32_t> uniqueVertices = {};
+        std::unordered_map<glm::vec3, uint32_t> uniqueVertices = {};
 
         for (const auto& shape : shapes) {
             for (const auto& index : shape.mesh.indices) {
-                Vertex vertex = {};
-
-                vertex.pos = {
+                glm::vec3 vertex = {
                     attrib.vertices[3 * index.vertex_index + 0],
                     attrib.vertices[3 * index.vertex_index + 1],
                     attrib.vertices[3 * index.vertex_index + 2]
                 };
-
-                vertex.texCoord = {
-                    attrib.texcoords[2 * index.texcoord_index + 0],
-                    1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-                };
-
-                vertex.color = {1.0f, 1.0f, 1.0f};
 
                 if (uniqueVertices.count(vertex) == 0) {
                     uniqueVertices[vertex] = static_cast<uint32_t>(vertices.size());

@@ -275,5 +275,8 @@ VkDeviceSize Utils::getFormatBPP(VkFormat format)
 		case VK_FORMAT_R16G16B16A16_USCALED:
 		case VK_FORMAT_R16G16B16A16_SFLOAT:
 			return 6;
+
+		default:
+			throw std::runtime_error("Unsupported format");
 	}
 }

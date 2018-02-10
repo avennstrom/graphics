@@ -249,7 +249,8 @@ void ColorBuffer::transition(VkCommandBuffer cb, VkImageLayout newLayout)
 		|| newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
 		|| newLayout == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL
 		|| newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-		|| newLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+		|| newLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+		|| newLayout == VK_IMAGE_LAYOUT_GENERAL);
 
 	if (m_imageLayout == newLayout)
 	{
