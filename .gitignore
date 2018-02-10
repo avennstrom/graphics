@@ -33,6 +33,7 @@
 *.tmp
 *.pdb
 obj
+*.ilk
 
 # Compiled shader files
 *.spv
