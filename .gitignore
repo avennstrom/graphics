@@ -34,6 +34,9 @@
 *.pdb
 obj
 *.ilk
+*.sln
+*.vcxproj
+*.vcxproj.filters
 
 # Compiled shader files
 *.spv
