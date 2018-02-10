@@ -11,6 +11,7 @@ project "graphics"
 	targetdir "bin"
 	debugdir "%{cfg.targetdir}"
 	objdir "obj/%{cfg.shortname}"
+	targetname "graphics_%{cfg.shortname}"
 	files {
 		"src/**.hpp",
 		"src/**.cpp",
@@ -46,3 +47,11 @@ project "graphics"
 		buildoutputs {
 			'%{cfg.targetdir}/shaders/%{file.name}.spv',
 		}
+
+	filter "configurations:Debug"
+		symbols "On"
+		optimize "Off"
+
+	filter "configurations:Release"
+		symbols "On"
+		optimize "On"
