@@ -1,0 +1,23 @@
+#version 450
+
+layout(binding = 0, r32ui) uniform readonly uimage2D g_input;
+layout(binding = 1, rgba8) uniform writeonly image2D g_output;
+
+vec4 idToColor(uint id)
+{
+	uint bits = bitfieldReverse(id);
+	return vec4(
+		((bits >> 24) & 0xff) / 255.0,
+		((bits >> 16) & 0xff) / 255.0,
+		((bits >> 8) & 0xff) / 255.0,
+		1.0);
+}
+
+layout(local_size_x=8, local_size_y=8, local_size_z=1) in;
+void main()
+{
+	const ivec2 ST = ivec2(gl_GlobalInvocationID.xy);
+	uint id = imageLoad(g_input, ST).x;
+	vec4 color = idToColor(id);
+	imageStore(g_output, ST, color);
+}
