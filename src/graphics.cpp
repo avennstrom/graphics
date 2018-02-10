@@ -291,15 +291,15 @@ private:
 			vkCmdBindPipeline(cb, VK_PIPELINE_BIND_POINT_COMPUTE, computePipeline);
 
 			visibilityBuffer.transition(cb, VK_IMAGE_LAYOUT_GENERAL);
-			sceneColor.transition(cb, VK_IMAGE_LAYOUT_GENERAL);
+			backbuffer.transition(cb, VK_IMAGE_LAYOUT_GENERAL);
 
 			VkDescriptorImageInfo imageInfo1 = {};
 			imageInfo1.imageLayout = visibilityBuffer.layout();
 			imageInfo1.imageView = visibilityBuffer.view();
 
 			VkDescriptorImageInfo imageInfo2 = {};
-			imageInfo2.imageLayout = sceneColor.layout();
-			imageInfo2.imageView = sceneColor.view();
+			imageInfo2.imageLayout = backbuffer.layout();
+			imageInfo2.imageView = backbuffer.view();
 
 			VkWriteDescriptorSet descriptorWrites[2] = {};
 
@@ -338,29 +338,6 @@ private:
 
 			vkCmdDispatch(cb, (swapChainExtent.width + 7) / 8, (swapChainExtent.height + 7) / 8, 1);
 		}
-
-		visibilityBuffer.transition(cb, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-		backbuffer.transition(cb, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-
-		VkImageBlit blit = {};
-		blit.srcOffsets[0] = { 0, 0, 0 };
-		blit.srcOffsets[1] = { (int32_t)swapChainExtent.width, (int32_t)swapChainExtent.height, 1 };
-		blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		blit.srcSubresource.layerCount = 1;
-		blit.dstOffsets[0] = { 0, 0, 0 };
-		blit.dstOffsets[1] = { (int32_t)swapChainExtent.width, (int32_t)swapChainExtent.height, 1 };
-		blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		blit.dstSubresource.layerCount = 1;
-
-		vkCmdBlitImage(
-			cb,
-			sceneColor.image(),
-			sceneColor.layout(),
-			backbuffer.image(),
-			backbuffer.layout(),
-			1,
-			&blit,
-			VK_FILTER_NEAREST);
 
 		backbuffer.transition(cb, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 	}
@@ -638,7 +615,7 @@ private:
         createInfo.imageColorSpace = surfaceFormat.colorSpace;
         createInfo.imageExtent = extent;
         createInfo.imageArrayLayers = 1;
-        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+        createInfo.imageUsage = VK_IMAGE_USAGE_STORAGE_BIT;
 
         QueueFamilyIndices indices = findQueueFamilies(Graphics::g_physicalDevice);
         uint32_t queueFamilyIndices[] = {(uint32_t) indices.graphicsFamily, (uint32_t) indices.presentFamily};
